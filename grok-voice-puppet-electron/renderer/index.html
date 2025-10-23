@@ -1,0 +1,51 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Grok Voice Puppet — HUD</title>
+    <style>
+      body { font-family: system-ui, ui-sans-serif, sans-serif; margin: 16px; }
+      .box { padding: 12px 14px; border-radius: 12px; background:#111; color:#fff; }
+      input[type=text] { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #999; }
+      button { padding: 8px 12px; border-radius: 8px; border: 0; margin-top: 8px; cursor: pointer; }
+      .small { font-size: 12px; color: #666; }
+      .ok { color: #0b8; }
+      .err { color: #f55; }
+      code { background: #f2f2f2; padding: 2px 4px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h2>Grok Voice Puppet — HUD</h2>
+    <div class="box">
+      <div>Test a line manually:</div>
+      <input id="t" type="text" placeholder="Type something to speak…" />
+      <button id="s">Speak</button>
+      <div id="msg" class="small"></div>
+    </div>
+    <p class="small">Keep this app running. Install the userscript and open Grok; new assistant text will be spoken with your cloned voice (once you wire it), and RMS frames will drive the avatar.</p>
+    <script>
+      const t = document.getElementById('t');
+      const b = document.getElementById('s');
+      const msg = document.getElementById('msg');
+      b.onclick = async () => {
+        msg.textContent = '';
+        try {
+          const r = await fetch('http://localhost:7070/speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: t.value })
+          });
+          const j = await r.json();
+          if (j.ok) {
+            msg.innerHTML = '<span class="ok">✓ Sent. Duration ~' + (j.seconds?.toFixed(2) ?? '0.00') + 's</span>';
+          } else {
+            msg.innerHTML = '<span class="err">Error: ' + (j.error || 'unknown') + '</span>';
+          }
+        } catch (e) {
+          msg.innerHTML = '<span class="err">Network error: ' + e + '</span>';
+        }
+      };
+    </script>
+  </body>
+</html>
